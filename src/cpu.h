@@ -45,23 +45,25 @@ typedef struct cpu
     uint8_t *memorybus;
     uint16_t PC;
     uint16_t SP;
+    bool IME;
+    bool IME_pending;
 } cpu_t;
 
 
 typedef struct OperationResult
 {
-    uint8_t result;
+    uint16_t result;
     bool carry;
     bool halfcarry;
 } operation_result_t;
 
 
-uint8_t get_8bit_register(registers_t *registers, reg_8bits_t reg_8bits);
-void set_8bit_register(registers_t *registers, reg_8bits_t reg_8bits, uint8_t value);
+uint8_t get_8bit_register(cpu_t *cpu, reg_8bits_t reg_8bits);
+void set_8bit_register(cpu_t *cpu, reg_8bits_t reg_8bits, uint8_t value);
 
 
-int get_flag(registers_t *reg, flag_t flag);
-void set_flag(registers_t *reg, flag_t flag, int value);
+int get_flag(cpu_t *cpu, flag_t flag);
+void set_flag(cpu_t *cpu, flag_t flag, int value);
 
 int execute_next_instruction(cpu_t *cpu);
 
@@ -110,22 +112,23 @@ int LD_A_HLD(cpu_t *cpu);
 
 int ADC_r8(cpu_t *cpu, reg_8bits_t reg);
 int ADC_HL(cpu_t *cpu);
-int ADC_n8(cpu_t *cpu, uint8_t value);
+int ADC_n8(cpu_t *cpu);
 int ADD_r8(cpu_t *cpu, reg_8bits_t reg);
 int ADD_HL(cpu_t *cpu);
-int ADD_n8(cpu_t *cpu, uint8_t value);
-int CP_A_HL(cpu_t *cpu);
-int CP_A_n8(cpu_t *cpu, reg_8bits_t reg);
+int ADD_n8(cpu_t *cpu);
+int CP_r8(cpu_t *cpu, reg_8bits_t reg);
+int CP_HL(cpu_t *cpu);
+int CP_n8(cpu_t *cpu);
 int DEC_r8(cpu_t *cpu, reg_8bits_t reg);
 int DEC_HL(cpu_t *cpu);
 int INC_r8(cpu_t *cpu, reg_8bits_t reg);
 int INC_HL(cpu_t *cpu);
-int SBC_A_r8(cpu_t *cpu, reg_8bits_t reg);
-int SBC_A_HL(cpu_t *cpu);
-int SBC_A_n8(cpu_t *cpu, uint8_t value);
+int SBC_r8(cpu_t *cpu, reg_8bits_t reg);
+int SBC_HL(cpu_t *cpu);
+int SBC_n8(cpu_t *cpu);
 int SUB_r8(cpu_t *cpu, reg_8bits_t reg);
-int SUB_A_HL(cpu_t *cpu);
-int SUB_A_n8(cpu_t *cpu, uint8_t value);
+int SUB_HL(cpu_t *cpu);
+int SUB_n8(cpu_t *cpu);
 // 16-bit arithmetic instructions
 
 int ADD_HL_r16(cpu_t *cpu, uint16_t *reg);
@@ -136,14 +139,14 @@ int INC_r16(cpu_t *cpu, uint16_t *reg);
 
 int AND_r8(cpu_t *cpu, reg_8bits_t reg);
 int AND_HL(cpu_t *cpu);
-int AND_n8(cpu_t *cpu, uint8_t value);
+int AND_n8(cpu_t *cpu);
 int CPL(cpu_t *cpu);
 int OR_r8(cpu_t *cpu, reg_8bits_t reg);
 int OR_HL(cpu_t *cpu);
-int OR_n8(cpu_t *cpu, uint8_t value);
+int OR_n8(cpu_t *cpu);
 int XOR_r8(cpu_t *cpu, reg_8bits_t reg);
 int XOR_HL(cpu_t *cpu);
-int XOR_n8(cpu_t *cpu, uint8_t value);
+int XOR_n8(cpu_t *cpu);
 
 
 // Bit flag instructions
@@ -184,16 +187,16 @@ int SWAP_HL(cpu_t *cpu);
 // Jumps and subroutine instructions
 
 int CALL_n16(cpu_t *cpu);
-int CALL_cc_n16(cpu_t *cpu, bool condition);
+int CALL_cc_n16(cpu_t *cpu);
 int JP_HL(cpu_t *cpu);
 int JP_n16(cpu_t *cpu);
-int JP_cc_n16(cpu_t *cpu, bool condition);
-int JR_n8(cpu_t *cpu, int8_t offset);
-int JR_cc_n8(cpu_t *cpu, int8_t offset, bool condition);
-int RET_cc(cpu_t *cpu, bool condition);
+int JP_cc_n16(cpu_t *cpu, bool cc);
+int JR_e(cpu_t *cpu);
+int JR_cc_e(cpu_t *cpu, bool cc);
+int RET_cc(cpu_t *cpu, bool cc);
 int RET(cpu_t *cpu);
 int RETI(cpu_t *cpu);
-int RST_vec(cpu_t *cpu, uint8_t vector);
+int RST_n(cpu_t *cpu, uint8_t n);
 
 // Carry flag instructions
 int CCF(cpu_t *cpu);
@@ -204,7 +207,6 @@ int ADD_HL_Sp(cpu_t *cpu);
 int ADD_SP_e8(cpu_t *cpu, int8_t offset);
 int DEC_SP(cpu_t *cpu);
 int INC_SP(cpu_t *cpu);
-int LD_SP_n16(cpu_t *cpu);
 int LD_n16_SP(cpu_t *cpu);
 int LD_SP_HL(cpu_t *cpu);
 int LD_HL_SP_e8(cpu_t *cpu, int8_t offset);
