@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <stdint.h>
 #include <stdio.h>
 
 #include "../src/cpu.h"
@@ -8,7 +9,8 @@
 // ==================================================================================
 
 void test_get_8bit_register() {
-        
+        cpu_t cpu;
+    uint8_t memory[0xFFFF] = {0};
     registers_t reg = {
         .AF = (uint16_t[]){0x1234},
         .BC = (uint16_t[]){0x5678},
@@ -17,18 +19,25 @@ void test_get_8bit_register() {
         .SP = (uint16_t[]){0x1111},
         .PC = (uint16_t[]){0x2222}
     };    
+    cpu.registers = &reg;
+    cpu.memorybus = memory;
+    cpu.PC = *reg.PC;
+    cpu.SP = *reg.SP;
+        
     // Test getting each register
-    assert(get_8bit_register(&reg, A) == 0x12);
-    assert(get_8bit_register(&reg, B) == 0x56);
-    assert(get_8bit_register(&reg, C) == 0x78);
-    assert(get_8bit_register(&reg, D) == 0x9A);
-    assert(get_8bit_register(&reg, E) == 0xBC);
-    assert(get_8bit_register(&reg, H) == 0xDE);
-    assert(get_8bit_register(&reg, L) == 0xF0);
+    assert(get_8bit_register(&cpu, A) == 0x12);
+    assert(get_8bit_register(&cpu, B) == 0x56);
+    assert(get_8bit_register(&cpu, C) == 0x78);
+    assert(get_8bit_register(&cpu, D) == 0x9A);
+    assert(get_8bit_register(&cpu, E) == 0xBC);
+    assert(get_8bit_register(&cpu, H) == 0xDE);
+    assert(get_8bit_register(&cpu, L) == 0xF0);
 }
 
 void test_set_8bit_register() {
         
+    cpu_t cpu;
+    uint8_t memory[0xFFFF] = {0};
     registers_t reg = {
         .AF = (uint16_t[]){0x1234},
         .BC = (uint16_t[]){0x5678},
@@ -36,28 +45,33 @@ void test_set_8bit_register() {
         .HL = (uint16_t[]){0xDEF0},
         .SP = (uint16_t[]){0x1111},
         .PC = (uint16_t[]){0x2222}
-    };        
+    };    
+    cpu.registers = &reg;
+    cpu.memorybus = memory;
+    cpu.PC = *reg.PC;
+    cpu.SP = *reg.SP;
+                
     // Test setting each register
-    set_8bit_register(&reg, A, 0x01);
-    assert(get_8bit_register(&reg, A) == 0x01);
+    set_8bit_register(&cpu, A, 0x01);
+    assert(get_8bit_register(&cpu, A) == 0x01);
     
-    set_8bit_register(&reg, B, 0x02);
-    assert(get_8bit_register(&reg, B) == 0x02);
+    set_8bit_register(&cpu, B, 0x02);
+    assert(get_8bit_register(&cpu, B) == 0x02);
     
-    set_8bit_register(&reg, C, 0x03);
-    assert(get_8bit_register(&reg, C) == 0x03);
+    set_8bit_register(&cpu, C, 0x03);
+    assert(get_8bit_register(&cpu, C) == 0x03);
     
-    set_8bit_register(&reg, D, 0x04);
-    assert(get_8bit_register(&reg, D) == 0x04);
+    set_8bit_register(&cpu, D, 0x04);
+    assert(get_8bit_register(&cpu, D) == 0x04);
     
-    set_8bit_register(&reg, E, 0x05);
-    assert(get_8bit_register(&reg, E) == 0x05);
+    set_8bit_register(&cpu, E, 0x05);
+    assert(get_8bit_register(&cpu, E) == 0x05);
     
-    set_8bit_register(&reg, H, 0x07);
-    assert(get_8bit_register(&reg, H) == 0x07);
+    set_8bit_register(&cpu, H, 0x07);
+    assert(get_8bit_register(&cpu, H) == 0x07);
     
-    set_8bit_register(&reg, L, 0x08);
-    assert(get_8bit_register(&reg, L) == 0x08);
+    set_8bit_register(&cpu, L, 0x08);
+    assert(get_8bit_register(&cpu, L) == 0x08);
 }
 
 // ==================================================================================
@@ -65,25 +79,9 @@ void test_set_8bit_register() {
 // ==================================================================================
 
 void test_get_flag() {
-        
-    registers_t reg = {
-        .AF = (uint16_t[]){0x1200},
-        .BC = (uint16_t[]){0x5678},
-        .DE = (uint16_t[]){0x9ABC},
-        .HL = (uint16_t[]){0xDEF0},
-        .SP = (uint16_t[]){0x1111},
-        .PC = (uint16_t[]){0x2222}
-    };        
     
-    // Test getting flags
-    assert(get_flag(&reg, ZERO) == 0); // Assuming initial value is not zero
-    assert(get_flag(&reg, SUB) == 0);
-    assert(get_flag(&reg, HALF_CARRY) == 0);
-    assert(get_flag(&reg, CARRY) == 0);
-}
-
-void test_set_flag() {
-        
+    cpu_t cpu;
+    uint8_t memory[0xFFFF] = {0};
     registers_t reg = {
         .AF = (uint16_t[]){0x1234},
         .BC = (uint16_t[]){0x5678},
@@ -91,19 +89,47 @@ void test_set_flag() {
         .HL = (uint16_t[]){0xDEF0},
         .SP = (uint16_t[]){0x1111},
         .PC = (uint16_t[]){0x2222}
-    };        
+    };    
+    cpu.registers = &reg;
+    cpu.memorybus = memory;
+    cpu.PC = *reg.PC;
+    cpu.SP = *reg.SP;
+    
+    // Test getting flags
+    assert(get_flag(&cpu, ZERO) == 0); // Assuming initial value is not zero
+    assert(get_flag(&cpu, SUB) == 0);
+    assert(get_flag(&cpu, HALF_CARRY) == 0);
+    assert(get_flag(&cpu, CARRY) == 0);
+}
+
+void test_set_flag() {
+    
+    cpu_t cpu;
+    uint8_t memory[0xFFFF] = {0};
+    registers_t reg = {
+        .AF = (uint16_t[]){0x1234},
+        .BC = (uint16_t[]){0x5678},
+        .DE = (uint16_t[]){0x9ABC},
+        .HL = (uint16_t[]){0xDEF0},
+        .SP = (uint16_t[]){0x1111},
+        .PC = (uint16_t[]){0x2222}
+    };    
+    cpu.registers = &reg;
+    cpu.memorybus = memory;
+    cpu.PC = *reg.PC;
+    cpu.SP = *reg.SP;      
     // Test setting flags
-    set_flag(&reg, ZERO, 1);
-    assert(get_flag(&reg, ZERO) == 1);
+    set_flag(&cpu, ZERO, 1);
+    assert(get_flag(&cpu, ZERO) == 1);
     
-    set_flag(&reg, SUB, 1);
-    assert(get_flag(&reg, SUB) == 1);
+    set_flag(&cpu, SUB, 1);
+    assert(get_flag(&cpu, SUB) == 1);
     
-    set_flag(&reg, HALF_CARRY, 1);
-    assert(get_flag(&reg, HALF_CARRY) == 1);
+    set_flag(&cpu, HALF_CARRY, 1);
+    assert(get_flag(&cpu, HALF_CARRY) == 1);
     
-    set_flag(&reg, CARRY, 1);
-    assert(get_flag(&reg, CARRY) == 1);
+    set_flag(&cpu, CARRY, 1);
+    assert(get_flag(&cpu, CARRY) == 1);
 }
 
 
@@ -118,7 +144,7 @@ void test_LD_r8_r8(cpu_t *cpu)
     cpu->registers->AF = (uint16_t[]){0x12FF};
     cpu->registers->BC = (uint16_t[]){0x3400};
     int timing = LD_r8_r8(cpu, B, A);
-    assert(get_8bit_register(cpu->registers, B) == 0x12);
+    assert(get_8bit_register(cpu, B) == 0x12);
     assert(cpu->PC == old_PC);
     assert(timing == 1);
 }
@@ -132,7 +158,7 @@ void test_LD_r8_n8(cpu_t *cpu)
     cpu->registers->AF = (uint16_t[]){0x1200};
     cpu->registers->BC = (uint16_t[]){0x3400};
     int timing = LD_r8_n8(cpu, C);
-    assert(get_8bit_register(cpu->registers, C) == 0x56);
+    assert(get_8bit_register(cpu, C) == 0x56);
     assert(cpu->PC == old_PC + 1);
     assert(timing == 2);
 }
@@ -188,7 +214,7 @@ void test_LD_r8_HL(cpu_t *cpu)
     // LD A, (HL)
     cpu->registers->AF = (uint16_t[]){0x0000};
     int timing = LD_r8_HL(cpu, A);
-    assert(get_8bit_register(cpu->registers, A) == 0xDE);
+    assert(get_8bit_register(cpu, A) == 0xDE);
     assert(cpu->PC == old_PC);
     assert(timing == 2);
 }
@@ -219,14 +245,14 @@ void test_LD_n16_A(cpu_t *cpu)
     assert(cpu->PC == old_PC + 2);
     assert(timing == 4);
 }
-void test_LDH_n16_A(cpu_t *cpu)
+void test_LDH_n8_A(cpu_t *cpu)
 {
     printf("Testing LDH_n16_A...\n");
     uint16_t old_PC = cpu->PC;
     // Prepare memory with immediate address
     cpu->memorybus[old_PC] = 0xDE; // Low byte
     cpu->registers->AF = (uint16_t[]){0x7800};
-    int timing = LDH_n16_A(cpu);
+    int timing = LDH_n8_A(cpu);
     assert(cpu->memorybus[0xFFDE] == 0x78);
     assert(cpu->PC == old_PC + 1);
     assert(timing == 2);
@@ -273,6 +299,19 @@ void test_LD_A_n16(cpu_t *cpu)
     assert(timing == 4);
 }
 
+void test_LDH_A_n16(cpu_t *cpu)
+{
+    printf("Testing LDH_A_n16...\n");
+    uint16_t old_PC = cpu->PC;
+    cpu->memorybus[0xFF04] = 0xCD;
+    cpu->memorybus[cpu->PC] = 0x04; 
+    cpu->registers->AF = (uint16_t[]){0x0000};
+    int timing = LDH_A_C(cpu);
+    assert(get_8bit_register(cpu, A) == 0xCD);
+    assert(cpu->PC == old_PC+1);
+    assert(timing == 3);
+}
+
 void test_LDH_A_C(cpu_t *cpu)
 {
     printf("Testing LDH_A_C...\n");
@@ -282,7 +321,7 @@ void test_LDH_A_C(cpu_t *cpu)
     
     cpu->registers->AF = (uint16_t[]){0x0000};
     int timing = LDH_A_C(cpu);
-    assert(get_8bit_register(cpu->registers, A) == 0xCD);
+    assert(get_8bit_register(cpu, A) == 0xCD);
     assert(cpu->PC == old_PC);
     assert(timing == 2);
 }
@@ -290,7 +329,7 @@ void test_LD_HLI_A(cpu_t *cpu)
 {
     uint16_t old_PC = cpu->PC;
     cpu->registers->HL = (uint16_t[]){0x3000};
-    set_8bit_register(cpu->registers, A, 0xEF);
+    set_8bit_register(cpu, A, 0xEF);
     int timing = LD_HLD_A(cpu);
     assert(cpu->memorybus[0x3000] == 0xEF);
     assert(*cpu->registers->HL == 0x3100);
@@ -302,7 +341,7 @@ void test_LD_HLD_A(cpu_t *cpu)
 {
     uint16_t old_PC = cpu->PC;
     cpu->registers->HL = (uint16_t[]){0x3000};
-    set_8bit_register(cpu->registers, A, 0xEF);
+    set_8bit_register(cpu, A, 0xEF);
     int timing = LD_HLD_A(cpu);
     assert(cpu->memorybus[0x3000] == 0xEF);
     assert(*cpu->registers->HL == 0x2FFF);
@@ -313,10 +352,10 @@ void test_LD_A_HLI(cpu_t *cpu)
 {
     uint16_t old_PC = cpu->PC;
     cpu->registers->HL = (uint16_t[]){0x3000};
-    set_8bit_register(cpu->registers, A, 0xEF);
+    set_8bit_register(cpu, A, 0xEF);
     cpu->memorybus[0x3000] = 0xAB;
     int timing = LD_A_HLI(cpu);
-    assert(get_8bit_register(cpu->registers, A) == 0xAB);
+    assert(get_8bit_register(cpu, A) == 0xAB);
     assert(*cpu->registers->HL == 0x3001);
     assert(cpu->PC == old_PC);
     assert(timing == 2);
@@ -328,7 +367,7 @@ void test_LD_A_HLD(cpu_t *cpu)
     cpu->registers->HL = (uint16_t[]){0x3000};
     cpu->memorybus[0x3000] = 0xCD;
     int timing = LD_A_HLD(cpu);
-    assert(get_8bit_register(cpu->registers, A) == 0xCD);
+    assert(get_8bit_register(cpu, A) == 0xCD);
     assert(*cpu->registers->HL == 0x2FFF);
     assert(cpu->PC == old_PC);
     assert(timing == 2);
@@ -362,7 +401,7 @@ void test_load_instructions()
     test_LD_r8_HL(&cpu);
     test_LD_r16_A(&cpu);
     test_LD_n16_A(&cpu);
-    test_LDH_n16_A(&cpu);
+    test_LDH_n8_A(&cpu);
     test_LDH_C_A(&cpu);
     test_LD_A_r16(&cpu);
     test_LD_A_n16(&cpu);
@@ -389,11 +428,11 @@ void test_ADC_r8(cpu_t *cpu)
     int timing = ADC_r8(cpu, B);
     assert(get_8bit_register(cpu, A) == 0x04);
     assert(timing == 1);
-    assert(cpu->PC == (old_pc++));
-    assert(get_flag(cpu->registers, ZERO) == 0);
-    assert(get_flag(cpu->registers, HALF_CARRY) == 0);
-    assert(get_flag(cpu->registers, CARRY) == 0);
-    assert(get_flag(cpu->registers, SUB) == 0);
+    assert(cpu->PC == (old_pc));
+    assert(get_flag(cpu, ZERO) == 0);
+    assert(get_flag(cpu, HALF_CARRY) == 0);
+    assert(get_flag(cpu, CARRY) == 0);
+    assert(get_flag(cpu, SUB) == 0);
 
     printf("With carry and half-carry\n");
     cpu->registers->BC = (uint16_t[]){0xFF00};
@@ -402,11 +441,11 @@ void test_ADC_r8(cpu_t *cpu)
     int timing2 = ADC_r8(cpu, B);
     assert(get_8bit_register(cpu, A) == 0x00);
     assert(timing2 == 1);
-    assert(cpu->PC == (old_pc2++));
-    assert(get_flag(cpu->registers, ZERO) == 1);
-    assert(get_flag(cpu->registers, HALF_CARRY) == 1);
-    assert(get_flag(cpu->registers, CARRY) == 1);
-    assert(get_flag(cpu->registers, SUB) == 0);
+    assert(cpu->PC == (old_pc2));
+    assert(get_flag(cpu, ZERO) == 1);
+    assert(get_flag(cpu, HALF_CARRY) == 1);
+    assert(get_flag(cpu, CARRY) == 1);
+    assert(get_flag(cpu, SUB) == 0);
 }
 void test_ADC_HL(cpu_t *cpu)
 {
@@ -418,13 +457,28 @@ void test_ADC_HL(cpu_t *cpu)
     int timing = ADC_HL(cpu);
     assert(get_8bit_register(cpu, A) == 0x04);
     assert(timing == 2);
-    assert(cpu->PC == (old_pc++));
-    assert(get_flag(cpu->registers, ZERO) == 0);
-    assert(get_flag(cpu->registers, HALF_CARRY) == 0);
-    assert(get_flag(cpu->registers, CARRY) == 0);
-    assert(get_flag(cpu->registers, SUB) == 0);
+    assert(cpu->PC == (old_pc));
+    assert(get_flag(cpu, ZERO) == 0);
+    assert(get_flag(cpu, HALF_CARRY) == 0);
+    assert(get_flag(cpu, CARRY) == 0);
+    assert(get_flag(cpu, SUB) == 0);
 }
-void test_ADC_n8(cpu_t *cpu);
+void test_ADC_n8(cpu_t *cpu)
+{
+    printf("Testing ADC_n8...\n");
+    cpu->registers->HL = (uint16_t[]){0x0002};
+    cpu->memorybus[0x0002] = 0x02;
+    cpu->registers->AF = (uint16_t[]){0x0200};
+    uint16_t old_pc = cpu->PC;
+    int timing = ADC_HL(cpu);
+    assert(get_8bit_register(cpu, A) == 0x04);
+    assert(timing == 2);
+    assert(cpu->PC == (old_pc++));
+    assert(get_flag(cpu, ZERO) == 0);
+    assert(get_flag(cpu, HALF_CARRY) == 0);
+    assert(get_flag(cpu, CARRY) == 0);
+    assert(get_flag(cpu, SUB) == 0);
+}
 
 void test_ADD_r8(cpu_t *cpu)
 {
@@ -437,11 +491,11 @@ void test_ADD_r8(cpu_t *cpu)
     int timing = ADD_r8(cpu, B);
     assert(get_8bit_register(cpu, A) == 0x04);
     assert(timing == 1);
-    assert(cpu->PC == (old_pc++));
-    assert(get_flag(cpu->registers, ZERO) == 0);
-    assert(get_flag(cpu->registers, HALF_CARRY) == 0);
-    assert(get_flag(cpu->registers, CARRY) == 0);
-    assert(get_flag(cpu->registers, SUB) == 0);
+    assert(cpu->PC == (old_pc));
+    assert(get_flag(cpu, ZERO) == 0);
+    assert(get_flag(cpu, HALF_CARRY) == 0);
+    assert(get_flag(cpu, CARRY) == 0);
+    assert(get_flag(cpu, SUB) == 0);
 
     printf("With carry and half-carry\n");
     cpu->registers->BC = (uint16_t[]){0xFF00};
@@ -450,11 +504,11 @@ void test_ADD_r8(cpu_t *cpu)
     timing = ADD_r8(cpu, B);
     assert(get_8bit_register(cpu, A) == 0xFE);
     assert(timing == 1);
-    assert(cpu->PC == (old_pc++));
-    assert(get_flag(cpu->registers, ZERO) == 0);
-    assert(get_flag(cpu->registers, HALF_CARRY) == 1);
-    assert(get_flag(cpu->registers, CARRY) == 1);
-    assert(get_flag(cpu->registers, SUB) == 0);
+    assert(cpu->PC == (old_pc));
+    assert(get_flag(cpu, ZERO) == 0);
+    assert(get_flag(cpu, HALF_CARRY) == 1);
+    assert(get_flag(cpu, CARRY) == 1);
+    assert(get_flag(cpu, SUB) == 0);
 
     printf("Zero result\n");
     cpu->registers->BC = (uint16_t[]){0x8000};
@@ -463,15 +517,44 @@ void test_ADD_r8(cpu_t *cpu)
     timing = ADD_r8(cpu, B);
     assert(get_8bit_register(cpu, A) == 0x00);
     assert(timing == 1);
-    assert(cpu->PC == (old_pc++));
-    assert(get_flag(cpu->registers, ZERO) == 1);
-    assert(get_flag(cpu->registers, HALF_CARRY) == 1);
-    assert(get_flag(cpu->registers, CARRY) == 1);
-    assert(get_flag(cpu->registers, SUB) == 0);
+    assert(cpu->PC == (old_pc));
+    assert(get_flag(cpu, ZERO) == 1);
+    assert(get_flag(cpu, HALF_CARRY) == 1);
+    assert(get_flag(cpu, CARRY) == 1);
+    assert(get_flag(cpu, SUB) == 0);
 }
 
-void test_ADD_HL(cpu_t *cpu);
-void test_ADD_n8(cpu_t *cpu);
+void test_ADD_HL(cpu_t *cpu)
+{
+    printf("Testing ADD_HL...\n");
+    cpu->registers->HL = (uint16_t[]){0x0200};
+    cpu->registers->AF = (uint16_t[]){0x0200};
+    cpu->memorybus[*cpu->registers->HL] = 0x04;
+    uint16_t old_pc = cpu->PC;
+    int timing = ADD_HL(cpu);
+    assert(get_8bit_register(cpu, A) == 0x04);
+    assert(timing == 1);
+    assert(cpu->PC == (old_pc));
+    assert(get_flag(cpu, ZERO) == 0);
+    assert(get_flag(cpu, HALF_CARRY) == 0);
+    assert(get_flag(cpu, CARRY) == 0);
+    assert(get_flag(cpu, SUB) == 0);
+}
+void test_ADD_n8(cpu_t *cpu)
+{
+    printf("Testing ADD_n8...\n");
+    cpu->registers->AF = (uint16_t[]){0x0200};
+    cpu->memorybus[cpu->PC] = 0x04;
+    uint16_t old_pc = cpu->PC;
+    int timing = ADD_n8(cpu);
+    assert(get_8bit_register(cpu, A) == 0x06);
+    assert(timing == 2);
+    assert(cpu->PC == (old_pc));
+    assert(get_flag(cpu, ZERO) == 0);
+    assert(get_flag(cpu, HALF_CARRY) == 0);
+    assert(get_flag(cpu, CARRY) == 0);
+    assert(get_flag(cpu, SUB) == 0);
+}
 void test_CP_r8(cpu_t *cpu)
 {
     printf("Testing CP_r8...\n");
@@ -482,11 +565,11 @@ void test_CP_r8(cpu_t *cpu)
     int timing = CP_r8(cpu, B);
     assert(get_8bit_register(cpu, A) == 0x05);
     assert(timing == 1);
-    assert(cpu->PC == (old_pc++));
-    assert(get_flag(cpu->registers, ZERO) == 0);
-    assert(get_flag(cpu->registers, HALF_CARRY) == 0);
-    assert(get_flag(cpu->registers, CARRY) == 0);
-    assert(get_flag(cpu->registers, SUB) == 1);
+    assert(cpu->PC == (old_pc));
+    assert(get_flag(cpu, ZERO) == 0);
+    assert(get_flag(cpu, HALF_CARRY) == 0);
+    assert(get_flag(cpu, CARRY) == 0);
+    assert(get_flag(cpu, SUB) == 1);
 
     printf("Zero result\n");
     cpu->registers->BC = (uint16_t[]){0x0500};
@@ -495,11 +578,11 @@ void test_CP_r8(cpu_t *cpu)
     timing = CP_r8(cpu, B);
     assert(get_8bit_register(cpu, A) == 0x05);
     assert(timing == 1);
-    assert(cpu->PC == (old_pc++));
-    assert(get_flag(cpu->registers, ZERO) == 1);
-    assert(get_flag(cpu->registers, HALF_CARRY) == 0);
-    assert(get_flag(cpu->registers, CARRY) == 0);
-    assert(get_flag(cpu->registers, SUB) == 1);
+    assert(cpu->PC == (old_pc));
+    assert(get_flag(cpu, ZERO) == 1);
+    assert(get_flag(cpu, HALF_CARRY) == 0);
+    assert(get_flag(cpu, CARRY) == 0);
+    assert(get_flag(cpu, SUB) == 1);
 }
 void test_CP_HL(cpu_t *cpu)
 {
@@ -511,13 +594,27 @@ void test_CP_HL(cpu_t *cpu)
     int timing = CP_HL(cpu);
     assert(get_8bit_register(cpu, A) == 0x05);
     assert(timing == 2);
-    assert(cpu->PC == (old_pc++));
-    assert(get_flag(cpu->registers, ZERO) == 0);
-    assert(get_flag(cpu->registers, HALF_CARRY) == 0);
-    assert(get_flag(cpu->registers, CARRY) == 0);
-    assert(get_flag(cpu->registers, SUB) == 1);
+    assert(cpu->PC == (old_pc));
+    assert(get_flag(cpu, ZERO) == 0);
+    assert(get_flag(cpu, HALF_CARRY) == 0);
+    assert(get_flag(cpu, CARRY) == 0);
+    assert(get_flag(cpu, SUB) == 1);
 }
-void test_CP_A_n8(cpu_t *cpu);
+void test_CP_n8(cpu_t *cpu)
+{
+    printf("Testing CP_n8...\n");
+    cpu->memorybus[cpu->PC] = 0x02;
+    cpu->registers->AF = (uint16_t[]){0x0500};
+    uint16_t old_pc = cpu->PC;
+    int timing = CP_n8(cpu);
+    assert(get_8bit_register(cpu, A) == 0x05);
+    assert(timing == 2);
+    assert(cpu->PC == (old_pc++));
+    assert(get_flag(cpu, ZERO) == 0);
+    assert(get_flag(cpu, HALF_CARRY) == 0);
+    assert(get_flag(cpu, CARRY) == 0);
+    assert(get_flag(cpu, SUB) == 1);
+}
 void test_DEC_r8(cpu_t *cpu)
 {
     printf("Testing DEC_r8...\n");
@@ -528,10 +625,10 @@ void test_DEC_r8(cpu_t *cpu)
     int timing = DEC_r8(cpu, B);
     assert(*cpu->registers->BC == 0xFE00);
     assert(timing == 2);
-    assert(cpu->PC == (old_pc++));
-    assert(get_flag(cpu->registers, ZERO) == 0);
-    assert(get_flag(cpu->registers, HALF_CARRY) == 0);
-    assert(get_flag(cpu->registers, SUB) == 1);
+    assert(cpu->PC == (old_pc));
+    assert(get_flag(cpu, ZERO) == 0);
+    assert(get_flag(cpu, HALF_CARRY) == 0);
+    assert(get_flag(cpu, SUB) == 1);
 
     printf("Zero result\n");
     cpu->registers->BC = (uint16_t[]){0x0100};
@@ -539,11 +636,37 @@ void test_DEC_r8(cpu_t *cpu)
     timing = DEC_r8(cpu, B);
     assert(*cpu->registers->BC == 0x0000);
     assert(timing == 2);
-    assert(cpu->PC == (old_pc++));
-    assert(get_flag(cpu->registers, ZERO) == 1);
-    assert(get_flag(cpu->registers, HALF_CARRY) == 0);
+    assert(cpu->PC == (old_pc));
+    assert(get_flag(cpu, ZERO) == 1);
+    assert(get_flag(cpu, HALF_CARRY) == 0);
 }
-void test_DEC_HL(cpu_t *cpu);
+void test_DEC_HL(cpu_t *cpu)
+{
+    printf("Testing DEC_HL...\n");
+
+    printf("Basic behaviour\n");
+    *cpu->registers->HL = 0x1234;
+    cpu->memorybus[*cpu->registers->HL] = (uint8_t) 0xFF;
+    uint16_t old_pc = cpu->PC;
+    int timing = DEC_HL(cpu);
+    assert(read_memory(cpu, *cpu->registers->HL) == (uint8_t) 0xFE);
+    assert(timing == 2);
+    assert(cpu->PC == (old_pc));
+    assert(get_flag(cpu, ZERO) == 0);
+    assert(get_flag(cpu, HALF_CARRY) == 0);
+    assert(get_flag(cpu, SUB) == 1);
+
+    printf("Zero result\n");
+    *cpu->registers->HL = 0x1234;
+    cpu->memorybus[*cpu->registers->HL] = (uint8_t) 0x01;
+    old_pc = cpu->PC;
+    timing = DEC_HL(cpu);
+    assert(*cpu->registers->BC == 0x0000);
+    assert(timing == 3);
+    assert(cpu->PC == (old_pc));
+    assert(get_flag(cpu, ZERO) == 1);
+    assert(get_flag(cpu, HALF_CARRY) == 0);
+}
 
 void test_INC_r8(cpu_t *cpu)
 {
@@ -556,9 +679,9 @@ void test_INC_r8(cpu_t *cpu)
     assert(*cpu->registers->BC == 0x0100);
     assert(timing == 2);
     assert(cpu->PC == (old_pc++));
-    assert(get_flag(cpu->registers, ZERO) == 0);
-    assert(get_flag(cpu->registers, HALF_CARRY) == 0);
-    assert(get_flag(cpu->registers, SUB) == 0);
+    assert(get_flag(cpu, ZERO) == 0);
+    assert(get_flag(cpu, HALF_CARRY) == 0);
+    assert(get_flag(cpu, SUB) == 0);
 
     printf("Zero result\n");
     cpu->registers->BC = (uint16_t[]){0xFF00};
@@ -567,8 +690,8 @@ void test_INC_r8(cpu_t *cpu)
     assert(*cpu->registers->BC == 0x0000);
     assert(timing == 2);
     assert(cpu->PC == (old_pc++));
-    assert(get_flag(cpu->registers, ZERO) == 1);
-    assert(get_flag(cpu->registers, HALF_CARRY) == 1);
+    assert(get_flag(cpu, ZERO) == 1);
+    assert(get_flag(cpu, HALF_CARRY) == 1);
 }
 
 void test_INC_HL(cpu_t *cpu)
@@ -581,11 +704,11 @@ void test_INC_HL(cpu_t *cpu)
     int timing = INC_HL(cpu);
     assert(*cpu->registers->HL == 0x0001);
     assert(timing == 3);
-    assert(cpu->PC == (old_pc++));
+    assert(cpu->PC == (old_pc));
 
-    assert(get_flag(cpu->registers, ZERO) == 0);
-    assert(get_flag(cpu->registers, HALF_CARRY) == 0);
-    assert(get_flag(cpu->registers, SUB) == 0);
+    assert(get_flag(cpu, ZERO) == 0);
+    assert(get_flag(cpu, HALF_CARRY) == 0);
+    assert(get_flag(cpu, SUB) == 0);
 }
 
 void test_SBC_r8(cpu_t *cpu)
@@ -595,46 +718,51 @@ void test_SBC_r8(cpu_t *cpu)
     printf("Basic behaviour without borrow\n");
     cpu->registers->BC = (uint16_t[]){0x0500};
     cpu->registers->AF = (uint16_t[]){0x0A00};
+    set_flag(cpu, CARRY, 1);
     uint16_t old_pc = cpu->PC;
     int timing = SBC_r8(cpu, B);
-    assert(get_8bit_register(cpu, A) == 0x05);
+    assert(get_8bit_register(cpu, A) == 0x04);
     assert(timing == 1);
     assert(cpu->PC == (old_pc++));
-    assert(get_flag(cpu->registers, ZERO) == 0);
-    assert(get_flag(cpu->registers, HALF_CARRY) == 0);
-    assert(get_flag(cpu->registers, CARRY) == 0);
-    assert(get_flag(cpu->registers, SUB) == 1);
-
-    printf("With borrow and half-borrow\n");
-    cpu->registers->BC = (uint16_t[]){0x0F00};
-    cpu->registers->AF = (uint16_t[]){0x0A00 | 0x10}; // Set carry flag
-    uint16_t old_pc2 = cpu->PC;
-    int timing2 = SBC_r8(cpu, B);
-    assert(get_8bit_register(cpu, A) == 0xFB);
-    assert(timing2 == 1);
-    assert(cpu->PC == (old_pc2++));
-    assert(get_flag(cpu->registers, ZERO) == 0);
-    assert(get_flag(cpu->registers, HALF_CARRY) == 1);
-    assert(get_flag(cpu->registers, CARRY) == 1);
-    assert(get_flag(cpu->registers, SUB) == 1);
+    assert(get_flag(cpu, ZERO) == 0);
+    assert(get_flag(cpu, HALF_CARRY) == 0);
+    assert(get_flag(cpu, CARRY) == 0);
+    assert(get_flag(cpu, SUB) == 1);
 }
+
 void test_SBC_HL(cpu_t *cpu)
 {
     printf("Testing SBC_HL...\n");
     cpu->registers->HL = (uint16_t[]){0x0300};
-    cpu->memorybus[0x0300] = 0x02;
+    cpu->memorybus[*cpu->registers->HL] = 0x02;
     cpu->registers->AF = (uint16_t[]){0x0500};
+    set_flag(cpu, CARRY, 1);
     uint16_t old_pc = cpu->PC;
     int timing = SBC_HL(cpu);
-    assert(get_8bit_register(cpu, A) == 0x03);
+    assert(get_8bit_register(cpu, A) == 0x02);
+    assert(timing == 2);
+    assert(cpu->PC == (old_pc));
+    assert(get_flag(cpu, ZERO) == 0);
+    assert(get_flag(cpu, HALF_CARRY) == 0);
+    assert(get_flag(cpu, CARRY) == 0);
+    assert(get_flag(cpu, SUB) == 1);
+}
+void test_SBC_n8(cpu_t *cpu)
+{
+    printf("Testing SBC_n8...\n");
+    cpu->memorybus[cpu->PC] = 0x02;
+    cpu->registers->AF = (uint16_t[]){0x0500};
+    set_flag(cpu, CARRY, 1);
+    uint16_t old_pc = cpu->PC;
+    int timing = SBC_HL(cpu);
+    assert(get_8bit_register(cpu, A) == 0x02);
     assert(timing == 2);
     assert(cpu->PC == (old_pc++));
-    assert(get_flag(cpu->registers, ZERO) == 0);
-    assert(get_flag(cpu->registers, HALF_CARRY) == 0);
-    assert(get_flag(cpu->registers, CARRY) == 0);
-    assert(get_flag(cpu->registers, SUB) == 1);
+    assert(get_flag(cpu, ZERO) == 0);
+    assert(get_flag(cpu, HALF_CARRY) == 0);
+    assert(get_flag(cpu, CARRY) == 0);
+    assert(get_flag(cpu, SUB) == 1);
 }
-void test_SBC_A_n8(cpu_t *cpu);
 void test_SUB_r8(cpu_t *cpu)
 {
     printf("Testing SUB_r8...\n");
@@ -646,11 +774,11 @@ void test_SUB_r8(cpu_t *cpu)
     int timing = SUB_r8(cpu, B);
     assert(get_8bit_register(cpu, A) == 0x05);
     assert(timing == 1);
-    assert(cpu->PC == (old_pc++));
-    assert(get_flag(cpu->registers, ZERO) == 0);
-    assert(get_flag(cpu->registers, HALF_CARRY) == 0);
-    assert(get_flag(cpu->registers, CARRY) == 0);
-    assert(get_flag(cpu->registers, SUB) == 1);
+    assert(cpu->PC == (old_pc));
+    assert(get_flag(cpu, ZERO) == 0);
+    assert(get_flag(cpu, HALF_CARRY) == 0);
+    assert(get_flag(cpu, CARRY) == 0);
+    assert(get_flag(cpu, SUB) == 1);
 
     printf("With borrow and half-borrow\n");
     cpu->registers->BC = (uint16_t[]){0x0F00};
@@ -659,11 +787,11 @@ void test_SUB_r8(cpu_t *cpu)
     int timing2 = SUB_r8(cpu, B);
     assert(get_8bit_register(cpu, A) == 0xFB);
     assert(timing2 == 1);
-    assert(cpu->PC == (old_pc2++));
-    assert(get_flag(cpu->registers, ZERO) == 0);
-    assert(get_flag(cpu->registers, HALF_CARRY) == 1);
-    assert(get_flag(cpu->registers, CARRY) == 1);
-    assert(get_flag(cpu->registers, SUB) == 1);
+    assert(cpu->PC == (old_pc2));
+    assert(get_flag(cpu, ZERO) == 0);
+    assert(get_flag(cpu, HALF_CARRY) == 1);
+    assert(get_flag(cpu, CARRY) == 1);
+    assert(get_flag(cpu, SUB) == 1);
 }
 void test_SUB_HL(cpu_t *cpu)
 {
@@ -675,13 +803,27 @@ void test_SUB_HL(cpu_t *cpu)
     int timing = SUB_HL(cpu);
     assert(get_8bit_register(cpu, A) == 0x03);
     assert(timing == 2);
-    assert(cpu->PC == (old_pc++));
-    assert(get_flag(cpu->registers, ZERO) == 0);
-    assert(get_flag(cpu->registers, HALF_CARRY) == 0);
-    assert(get_flag(cpu->registers, CARRY) == 0);
-    assert(get_flag(cpu->registers, SUB) == 1);
+    assert(cpu->PC == (old_pc));
+    assert(get_flag(cpu, ZERO) == 0);
+    assert(get_flag(cpu, HALF_CARRY) == 0);
+    assert(get_flag(cpu, CARRY) == 0);
+    assert(get_flag(cpu, SUB) == 1);
 }
-void test_SUB_A_n8(cpu_t *cpu);
+void test_SUB_n8(cpu_t *cpu)
+{
+    printf("Testing SUB_n8...\n");
+    cpu->memorybus[cpu->PC] = 0x02;
+    cpu->registers->AF = (uint16_t[]){0x0500};
+    uint16_t old_pc = cpu->PC;
+    int timing = SUB_HL(cpu);
+    assert(get_8bit_register(cpu, A) == 0x03);
+    assert(timing == 2);
+    assert(cpu->PC == (old_pc++));
+    assert(get_flag(cpu, ZERO) == 0);
+    assert(get_flag(cpu, HALF_CARRY) == 0);
+    assert(get_flag(cpu, CARRY) == 0);
+    assert(get_flag(cpu, SUB) == 1);
+}
 
 void test_arithmetic_instructions()
 {
@@ -704,18 +846,19 @@ void test_arithmetic_instructions()
     test_ADD_r8(&cpu);
     test_ADD_HL(&cpu);
     test_ADD_n8(&cpu);
-    test_CP_A_HL(&cpu);
-    test_CP_A_n8(&cpu);
+    test_CP_r8(&cpu);
+    test_CP_n8(&cpu);
+    test_CP_HL(&cpu);
     test_DEC_r8(&cpu);
     test_DEC_HL(&cpu);
     test_INC_r8(&cpu);
     test_INC_HL(&cpu);
     test_SBC_r8(&cpu);
     test_SBC_HL(&cpu);
-    test_SBC_A_n8(&cpu);
+    test_SBC_n8(&cpu);
     test_SUB_r8(&cpu);
-    test_SUB_A_HL(&cpu);
-    test_SUB_A_n8(&cpu);
+    test_SUB_HL(&cpu);
+    test_SUB_n8(&cpu);
 }
 
 
@@ -723,17 +866,36 @@ void test_arithmetic_instructions()
 //                         Test 16-bit Arithmetic  Instructions
 // ==================================================================================
 
-void test_ADD_HL_r16(cpu_t *cpu);
-void test_DEC_r16(cpu_t *cpu);
+void test_ADD_HL_r16(cpu_t *cpu)
+{
+    printf("Testing ADD_HL_r16...");
+    *cpu->registers->HL = (uint16_t) 0x1234;
+    *cpu->registers->BC = (uint16_t) 0x4321;
+    uint16_t old_pc = cpu->PC;
+    int timing = ADD_HL_r16(cpu, cpu->registers->BC);
+    assert(timing == 2);
+    assert(*cpu->registers->HL == (uint16_t)0x5555);
+    assert(old_pc == cpu->PC);
+}
+void test_DEC_r16(cpu_t *cpu)
+{
+    printf("Testing DEC_r16...\n");
+    cpu->registers->BC = (uint16_t[]){0x0002};
+    uint16_t old_pc = cpu->PC;
+    int timing = DEC_r16(cpu, cpu->registers->BC);
+    assert(*cpu->registers->BC == 0x0001);
+    assert(timing == 2);
+    assert(cpu->PC == (old_pc));
+}
 void test_INC_r16(cpu_t *cpu)
 {
     printf("Testing INC_r16...\n");
     cpu->registers->BC = (uint16_t[]){0x0000};
     uint16_t old_pc = cpu->PC;
     int timing = INC_r16(cpu, cpu->registers->BC);
-    assert(*cpu->registers->BC == 0x0000);
+    assert(*cpu->registers->BC == 0x0001);
     assert(timing == 2);
-    assert(cpu->PC == (old_pc++));
+    assert(cpu->PC == (old_pc));
 }
 
 void test_16bit_arithmetic_instructions()
@@ -774,10 +936,10 @@ void test_AND_r8(cpu_t *cpu)
     assert(get_8bit_register(cpu, A) == 0x00);
     assert(timing == 1);
     assert(cpu->PC == (old_pc++));
-    assert(get_flag(cpu->registers, ZERO) == 1);
-    assert(get_flag(cpu->registers, HALF_CARRY) == 1);
-    assert(get_flag(cpu->registers, CARRY) == 0);
-    assert(get_flag(cpu->registers, SUB) == 0);
+    assert(get_flag(cpu, ZERO) == 1);
+    assert(get_flag(cpu, HALF_CARRY) == 1);
+    assert(get_flag(cpu, CARRY) == 0);
+    assert(get_flag(cpu, SUB) == 0);
 
     cpu->registers->BC = (uint16_t[]){0x3C00};
     cpu->registers->AF = (uint16_t[]){0xF0FF};
@@ -786,10 +948,10 @@ void test_AND_r8(cpu_t *cpu)
     assert(get_8bit_register(cpu, A) == 0x30);
     assert(timing2 == 1);
     assert(cpu->PC == (old_pc2++));
-    assert(get_flag(cpu->registers, ZERO) == 0);
-    assert(get_flag(cpu->registers, HALF_CARRY) == 1);
-    assert(get_flag(cpu->registers, CARRY) == 0);
-    assert(get_flag(cpu->registers, SUB) == 0);
+    assert(get_flag(cpu, ZERO) == 0);
+    assert(get_flag(cpu, HALF_CARRY) == 1);
+    assert(get_flag(cpu, CARRY) == 0);
+    assert(get_flag(cpu, SUB) == 0);
 }
 void test_AND_HL(cpu_t *cpu)
 {
@@ -803,10 +965,10 @@ void test_AND_HL(cpu_t *cpu)
     assert(get_8bit_register(cpu, A) == 0x00);
     assert(timing == 2);
     assert(cpu->PC == (old_pc++));
-    assert(get_flag(cpu->registers, ZERO) == 1);
-    assert(get_flag(cpu->registers, HALF_CARRY) == 1);
-    assert(get_flag(cpu->registers, CARRY) == 0);
-    assert(get_flag(cpu->registers, SUB) == 0);
+    assert(get_flag(cpu, ZERO) == 1);
+    assert(get_flag(cpu, HALF_CARRY) == 1);
+    assert(get_flag(cpu, CARRY) == 0);
+    assert(get_flag(cpu, SUB) == 0);
 
     cpu->registers->HL = (uint16_t[]){0x2000};
     cpu->memorybus[0x2000] = 0x3C;
@@ -816,10 +978,10 @@ void test_AND_HL(cpu_t *cpu)
     assert(get_8bit_register(cpu, A) == 0x30);
     assert(timing2 == 2);
     assert(cpu->PC == (old_pc2++));
-    assert(get_flag(cpu->registers, ZERO) == 0);
-    assert(get_flag(cpu->registers, HALF_CARRY) == 1);
-    assert(get_flag(cpu->registers, CARRY) == 0);
-    assert(get_flag(cpu->registers, SUB) == 0);
+    assert(get_flag(cpu, ZERO) == 0);
+    assert(get_flag(cpu, HALF_CARRY) == 1);
+    assert(get_flag(cpu, CARRY) == 0);
+    assert(get_flag(cpu, SUB) == 0);
 }
 void test_AND_n8(cpu_t *cpu);
 void test_CPL(cpu_t *cpu);
@@ -834,10 +996,10 @@ void test_OR_r8(cpu_t *cpu)
     assert(get_8bit_register(cpu, A) == 0xFF);
     assert(timing == 1);
     assert(cpu->PC == (old_pc++));
-    assert(get_flag(cpu->registers, ZERO) == 0);
-    assert(get_flag(cpu->registers, HALF_CARRY) == 0);
-    assert(get_flag(cpu->registers, CARRY) == 0);
-    assert(get_flag(cpu->registers, SUB) == 0);
+    assert(get_flag(cpu, ZERO) == 0);
+    assert(get_flag(cpu, HALF_CARRY) == 0);
+    assert(get_flag(cpu, CARRY) == 0);
+    assert(get_flag(cpu, SUB) == 0);
 
     cpu->registers->BC = (uint16_t[]){0x0000};
     cpu->registers->AF = (uint16_t[]){0x0000};
@@ -846,10 +1008,10 @@ void test_OR_r8(cpu_t *cpu)
     assert(get_8bit_register(cpu, A) == 0x00);
     assert(timing2 == 1);
     assert(cpu->PC == (old_pc2++));
-    assert(get_flag(cpu->registers, ZERO) == 1);
-    assert(get_flag(cpu->registers, HALF_CARRY) == 0);
-    assert(get_flag(cpu->registers, CARRY) == 0);
-    assert(get_flag(cpu->registers, SUB) == 0);
+    assert(get_flag(cpu, ZERO) == 1);
+    assert(get_flag(cpu, HALF_CARRY) == 0);
+    assert(get_flag(cpu, CARRY) == 0);
+    assert(get_flag(cpu, SUB) == 0);
 }
 void test_OR_HL(cpu_t *cpu)
 {
@@ -863,10 +1025,10 @@ void test_OR_HL(cpu_t *cpu)
     assert(get_8bit_register(cpu, A) == 0xFF);
     assert(timing == 2);
     assert(cpu->PC == (old_pc++));
-    assert(get_flag(cpu->registers, ZERO) == 0);
-    assert(get_flag(cpu->registers, HALF_CARRY) == 0);
-    assert(get_flag(cpu->registers, CARRY) == 0);
-    assert(get_flag(cpu->registers, SUB) == 0);
+    assert(get_flag(cpu, ZERO) == 0);
+    assert(get_flag(cpu, HALF_CARRY) == 0);
+    assert(get_flag(cpu, CARRY) == 0);
+    assert(get_flag(cpu, SUB) == 0);
 
     cpu->registers->HL = (uint16_t[]){0x4000};
     cpu->memorybus[0x4000] = 0x00;
@@ -876,10 +1038,10 @@ void test_OR_HL(cpu_t *cpu)
     assert(get_8bit_register(cpu, A) == 0x00);
     assert(timing2 == 2);
     assert(cpu->PC == (old_pc2++));
-    assert(get_flag(cpu->registers, ZERO) == 1);
-    assert(get_flag(cpu->registers, HALF_CARRY) == 0);
-    assert(get_flag(cpu->registers, CARRY) == 0);
-    assert(get_flag(cpu->registers, SUB) == 0);
+    assert(get_flag(cpu, ZERO) == 1);
+    assert(get_flag(cpu, HALF_CARRY) == 0);
+    assert(get_flag(cpu, CARRY) == 0);
+    assert(get_flag(cpu, SUB) == 0);
 }
 void test_OR_n8(cpu_t *cpu);
 void test_XOR_r8(cpu_t *cpu)
@@ -893,10 +1055,10 @@ void test_XOR_r8(cpu_t *cpu)
     assert(get_8bit_register(cpu, A) == 0xF0);
     assert(timing == 1);
     assert(cpu->PC == (old_pc++));
-    assert(get_flag(cpu->registers, ZERO) == 0);
-    assert(get_flag(cpu->registers, HALF_CARRY) == 0);
-    assert(get_flag(cpu->registers, CARRY) == 0);
-    assert(get_flag(cpu->registers, SUB) == 0);
+    assert(get_flag(cpu, ZERO) == 0);
+    assert(get_flag(cpu, HALF_CARRY) == 0);
+    assert(get_flag(cpu, CARRY) == 0);
+    assert(get_flag(cpu, SUB) == 0);
 
     cpu->registers->BC = (uint16_t[]){0xF000};
     cpu->registers->AF = (uint16_t[]){0xF000};
@@ -905,10 +1067,10 @@ void test_XOR_r8(cpu_t *cpu)
     assert(get_8bit_register(cpu, A) == 0x00);
     assert(timing2 == 1);
     assert(cpu->PC == (old_pc2++));
-    assert(get_flag(cpu->registers, ZERO) == 1);
-    assert(get_flag(cpu->registers, HALF_CARRY) == 0);
-    assert(get_flag(cpu->registers, CARRY) == 0);
-    assert(get_flag(cpu->registers, SUB) == 0);
+    assert(get_flag(cpu, ZERO) == 1);
+    assert(get_flag(cpu, HALF_CARRY) == 0);
+    assert(get_flag(cpu, CARRY) == 0);
+    assert(get_flag(cpu, SUB) == 0);
 }
 void test_XOR_HL(cpu_t *cpu)
 {
@@ -922,10 +1084,10 @@ void test_XOR_HL(cpu_t *cpu)
     assert(get_8bit_register(cpu, A) == 0xF0);
     assert(timing == 2);
     assert(cpu->PC == (old_pc++));
-    assert(get_flag(cpu->registers, ZERO) == 0);
-    assert(get_flag(cpu->registers, HALF_CARRY) == 0);
-    assert(get_flag(cpu->registers, CARRY) == 0);
-    assert(get_flag(cpu->registers, SUB) == 0);
+    assert(get_flag(cpu, ZERO) == 0);
+    assert(get_flag(cpu, HALF_CARRY) == 0);
+    assert(get_flag(cpu, CARRY) == 0);
+    assert(get_flag(cpu, SUB) == 0);
 
     cpu->registers->HL = (uint16_t[]){0x3000};
     cpu->memorybus[0x3000] = 0xF0;
@@ -935,10 +1097,10 @@ void test_XOR_HL(cpu_t *cpu)
     assert(get_8bit_register(cpu, A) == 0x00);
     assert(timing2 == 2);
     assert(cpu->PC == (old_pc2++));
-    assert(get_flag(cpu->registers, ZERO) == 1);
-    assert(get_flag(cpu->registers, HALF_CARRY) == 0);
-    assert(get_flag(cpu->registers, CARRY) == 0);
-    assert(get_flag(cpu->registers, SUB) == 0);
+    assert(get_flag(cpu, ZERO) == 1);
+    assert(get_flag(cpu, HALF_CARRY) == 0);
+    assert(get_flag(cpu, CARRY) == 0);
+    assert(get_flag(cpu, SUB) == 0);
 }
 void test_XOR_n8(cpu_t *cpu);
 

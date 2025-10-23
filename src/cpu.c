@@ -722,7 +722,7 @@ int execute_instruction(cpu_t *cpu, uint8_t instruction_byte, bool prefixed)
         case 0xEF: // RST 28H
             return RST_n(cpu, 0x28);
         case 0xF0: // LDH A,(n)
-            return LDH_A_C(cpu);   
+            return LDH_A_n16(cpu);   
         case 0xF1: // POP AF
             return POP_r16(cpu, cpu->registers->AF);
         case 0xF2: // LD A,(C)
@@ -1376,6 +1376,14 @@ int LDH_A_C(cpu_t *cpu)
     set_8bit_register(cpu, A , Z);
     return 2;
 }
+
+int LDH_A_n16(cpu_t *cpu)
+{
+    uint8_t n = read_memory(cpu, cpu->PC); cpu->PC++;
+    set_8bit_register(cpu, A, read_memory(cpu, unsigned_16(0xFF, n)));
+    return 3;
+}
+
 int LD_HLI_A(cpu_t *cpu)
 {
     write_memory(cpu, *cpu->registers->HL, get_8bit_register(cpu, A)); cpu->registers->HL++;
