@@ -95,7 +95,7 @@ int LD_HL_n8(cpu_t *cpu);
 int LD_r8_HL(cpu_t *cpu, reg_8bits_t reg);
 int LD_r16_A(cpu_t *cpu, uint16_t *reg);
 int LD_n16_A(cpu_t *cpu);
-int LDH_n16_A(cpu_t *cpu);
+int LDH_n8_A(cpu_t *cpu);
 int LDH_C_A(cpu_t *cpu);
 int LD_A_r16(cpu_t *cpu, uint16_t *reg);
 int LD_A_n16(cpu_t *cpu);
@@ -151,7 +151,7 @@ int XOR_n8(cpu_t *cpu);
 
 // Bit flag instructions
 
-int BIT_r8(cpu_t *cpu, reg_8bits_t reg, uint8_t bit);
+int BIT_r8(cpu_t *cpu, reg_8bits_t reg, int bit);
 int BIT_HL(cpu_t *cpu, uint8_t bit);
 int RES_r8(cpu_t *cpu, reg_8bits_t reg, uint8_t bit);
 int RES_HL(cpu_t *cpu, uint8_t bit);
@@ -187,7 +187,7 @@ int SWAP_HL(cpu_t *cpu);
 // Jumps and subroutine instructions
 
 int CALL_n16(cpu_t *cpu);
-int CALL_cc_n16(cpu_t *cpu);
+int CALL_cc_n16(cpu_t *cpu, bool cc);
 int JP_HL(cpu_t *cpu);
 int JP_n16(cpu_t *cpu);
 int JP_cc_n16(cpu_t *cpu, bool cc);
@@ -204,12 +204,12 @@ int SCF(cpu_t *cpu);
 
 // Stack manipulation instructions
 int ADD_HL_Sp(cpu_t *cpu);
-int ADD_SP_e8(cpu_t *cpu, int8_t offset);
+int ADD_SP_e8(cpu_t *cpu);
 int DEC_SP(cpu_t *cpu);
 int INC_SP(cpu_t *cpu);
 int LD_n16_SP(cpu_t *cpu);
 int LD_SP_HL(cpu_t *cpu);
-int LD_HL_SP_e8(cpu_t *cpu, int8_t offset);
+int LD_HL_SP_e8(cpu_t *cpu);
 int POP_r16(cpu_t *cpu, uint16_t *reg);
 int PUSH_r16(cpu_t *cpu, uint16_t *reg);
 int PUSH_AF(cpu_t *cpu);
@@ -236,6 +236,7 @@ bool compute_halfcarry_sub(uint8_t a, uint8_t b);
 //=================Utils=======================
 uint16_t unsigned_16(uint8_t msb, uint8_t lsb);
 operation_result_t add(uint8_t a, uint8_t b);
+operation_result_t add_16(uint16_t a, uint16_t b);
 
 operation_result_t sub(uint8_t a, uint8_t b);
 int bit(int i, uint8_t n);

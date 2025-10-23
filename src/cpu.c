@@ -262,7 +262,7 @@ int execute_instruction(cpu_t *cpu, uint8_t instruction_byte, bool prefixed)
         case 0x0C: // INC C
             return INC_r8(cpu, C);
         case 0x0D: // DEC C
-            return DEC(cpu, C);
+            return DEC_r8(cpu, C);
         case 0x0E: // LD C,n
             return LD_r8_n8(cpu, C);
         case 0x0F: // RRCA
@@ -689,7 +689,7 @@ int execute_instruction(cpu_t *cpu, uint8_t instruction_byte, bool prefixed)
         case 0xE1: // POP HL
             return POP_r16(cpu, cpu->registers->HL);
         case 0xE2: // LD (C),A
-            return LD_C_A(cpu);
+            return LDH_C_A(cpu);
         case 0xE3: // Blank
             fprintf(stderr, "Attempted to execute invalid instruction 0xE3.\n");
             exit(1);
@@ -703,7 +703,7 @@ int execute_instruction(cpu_t *cpu, uint8_t instruction_byte, bool prefixed)
         case 0xE7: // RST 20H
             return RST_n(cpu, 0x20);
         case 0xE8: // ADD SP,n
-            return ADD_SP_n8(cpu);
+            return ADD_SP_e8(cpu);
         case 0xE9: // JP (HL)
             return JP_HL(cpu);
         case 0xEA: // LD (nn),A
@@ -722,11 +722,11 @@ int execute_instruction(cpu_t *cpu, uint8_t instruction_byte, bool prefixed)
         case 0xEF: // RST 28H
             return RST_n(cpu, 0x28);
         case 0xF0: // LDH A,(n)
-            return LDH_A_n8(cpu);   
+            return LDH_A_C(cpu);   
         case 0xF1: // POP AF
             return POP_r16(cpu, cpu->registers->AF);
         case 0xF2: // LD A,(C)
-            return LD_A_C(cpu);
+            return LDH_A_C(cpu);
         case 0xF3: // DI
             return DI(cpu);
         case 0xF4: // Blank
@@ -739,9 +739,9 @@ int execute_instruction(cpu_t *cpu, uint8_t instruction_byte, bool prefixed)
         case 0xF7: // RST 30H
             return RST_n(cpu, 0x30);
         case 0xF8: // LD HL,SP+n
-            return LD_HL_SP_n8(cpu);
+            return LD_HL_SP_e8(cpu);
         case 0xF9: // LD SP,HL
-            return LD_r16_r16(cpu, cpu->registers->SP, cpu->registers->HL);
+            return LD_SP_HL(cpu);
         case 0xFA: // LD A,(nn)
             return LD_A_n16(cpu);
         case 0xFB: // EI
@@ -759,7 +759,8 @@ int execute_instruction(cpu_t *cpu, uint8_t instruction_byte, bool prefixed)
         default:
             break;
         }
-    } else 
+    } 
+    else 
     {
         switch (instruction_byte)
         {
@@ -892,395 +893,396 @@ int execute_instruction(cpu_t *cpu, uint8_t instruction_byte, bool prefixed)
         case 0x3F: // SRL A
             return SRL_r8(cpu, A);
         case 0x40: // BIT 0,B
-            return BIT_b_r8(cpu, 0, B);
+            return BIT_r8(cpu, 0, B);
         case 0x41: // BIT 0,C
-            return BIT_b_r8(cpu, 0, C);
+            return BIT_r8(cpu, 0, C);
         case 0x42: // BIT 0,D
-            return BIT_b_r8(cpu, 0, D);
+            return BIT_r8(cpu, 0, D);
         case 0x43: // BIT 0,E
-            return BIT_b_r8(cpu, 0, E);
+            return BIT_r8(cpu, 0, E);
         case 0x44: // BIT 0,H
-            return BIT_b_r8(cpu, 0, H);
+            return BIT_r8(cpu, 0, H);
         case 0x45: // BIT 0,L
-            return BIT_b_r8(cpu, 0, L);
+            return BIT_r8(cpu, 0, L);
         case 0x46: // BIT 0,(HL)
-            return BIT_b_HL(cpu, 0);
+            return BIT_HL(cpu, 0);
         case 0x47: // BIT 0,A
-            return BIT_b_r8(cpu, 0, A);
+            return BIT_r8(cpu, 0, A);
         case 0x48: // BIT 1,B
-            return BIT_b_r8(cpu, 1, B);
+            return BIT_r8(cpu, 1, B);
         case 0x49: // BIT 1,C
-            return BIT_b_r8(cpu, 1, C);
+            return BIT_r8(cpu, 1, C);
         case 0x4A: // BIT 1,D
-            return BIT_b_r8(cpu, 1, D);
+            return BIT_r8(cpu, 1, D);
         case 0x4B: // BIT 1,E
-            return BIT_b_r8(cpu, 1, E);
+            return BIT_r8(cpu, 1, E);
         case 0x4C: // BIT 1,H
-            return BIT_b_r8(cpu, 1, H);
+            return BIT_r8(cpu, 1, H);
         case 0x4D: // BIT 1,L
-            return BIT_b_r8(cpu, 1, L);
+            return BIT_r8(cpu, 1, L);
         case 0x4E: // BIT 1,(HL)
-            return BIT_b_HL(cpu, 1);
+            return BIT_HL(cpu, 1);
         case 0x4F: // BIT 1,A
-            return BIT_b_r8(cpu, 1, A);
+            return BIT_r8(cpu, 1, A);
         case 0x50: // BIT 2,B
-            return BIT_b_r8(cpu, 2, B);
+            return BIT_r8(cpu, 2, B);
         case 0x51: // BIT 2,C
-            return BIT_b_r8(cpu, 2, C);
+            return BIT_r8(cpu, 2, C);
         case 0x52: // BIT 2,D
-            return BIT_b_r8(cpu, 2, D);
+            return BIT_r8(cpu, 2, D);
         case 0x53: // BIT 2,E
-            return BIT_b_r8(cpu, 2, E);
+            return BIT_r8(cpu, 2, E);
         case 0x54: // BIT 2,H
-            return BIT_b_r8(cpu, 2, H);
+            return BIT_r8(cpu, 2, H);
         case 0x55: // BIT 2,L
-            return BIT_b_r8(cpu, 2, L);
+            return BIT_r8(cpu, 2, L);
         case 0x56: // BIT 2,(HL)
-            return BIT_b_HL(cpu, 2);
+            return BIT_HL(cpu, 2);
         case 0x57: // BIT 2,A
-            return BIT_b_r8(cpu, 2, A);
+            return BIT_r8(cpu, 2, A);
         case 0x58: // BIT 3,B
-            return BIT_b_r8(cpu, 3, B);
+            return BIT_r8(cpu, 3, B);
         case 0x59: // BIT 3,C
-            return BIT_b_r8(cpu, 3, C);
+            return BIT_r8(cpu, 3, C);
         case 0x5A: // BIT 3,D
-            return BIT_b_r8(cpu, 3, D);
+            return BIT_r8(cpu, 3, D);
         case 0x5B: // BIT 3,E
-            return BIT_b_r8(cpu, 3, E);
+            return BIT_r8(cpu, 3, E);
         case 0x5C: // BIT 3,H
-            return BIT_b_r8(cpu, 3, H);
+            return BIT_r8(cpu, 3, H);
         case 0x5D: // BIT 3,L
-            return BIT_b_r8(cpu, 3, L);
+            return BIT_r8(cpu, 3, L);
         case 0x5E: // BIT 3,(HL)
-            return BIT_b_HL(cpu, 3);
+            return BIT_HL(cpu, 3);
         case 0x5F: // BIT 3,A
-            return BIT_b_r8(cpu, 3, A);
+            return BIT_r8(cpu, 3, A);
         case 0x60: // BIT 4,B
-            return BIT_b_r8(cpu, 4, B);
+            return BIT_r8(cpu, 4, B);
         case 0x61: // BIT 4,C
-            return BIT_b_r8(cpu, 4, C);
+            return BIT_r8(cpu, 4, C);
         case 0x62: // BIT 4,D
-            return BIT_b_r8(cpu, 4, D);
+            return BIT_r8(cpu, 4, D);
         case 0x63: // BIT 4,E
-            return BIT_b_r8(cpu, 4, E);
+            return BIT_r8(cpu, 4, E);
         case 0x64: // BIT 4,H
-            return BIT_b_r8(cpu, 4, H);
+            return BIT_r8(cpu, 4, H);
         case 0x65: // BIT 4,L
-            return BIT_b_r8(cpu, 4, L);
+            return BIT_r8(cpu, 4, L);
         case 0x66: // BIT 4,(HL)
-            return BIT_b_HL(cpu, 4);
+            return BIT_HL(cpu, 4);
         case 0x67: // BIT 4,A
-            return BIT_b_r8(cpu, 4, A);
+            return BIT_r8(cpu, 4, A);
         case 0x68: // BIT 5,B
-            return BIT_b_r8(cpu, 5, B);
+            return BIT_r8(cpu, 5, B);
         case 0x69: // BIT 5,C
-            return BIT_b_r8(cpu, 5, C);
+            return BIT_r8(cpu, 5, C);
         case 0x6A: // BIT 5,D
-            return BIT_b_r8(cpu, 5, D);
+            return BIT_r8(cpu, 5, D);
         case 0x6B: // BIT 5,E
-            return BIT_b_r8(cpu, 5, E);
+            return BIT_r8(cpu, 5, E);
         case 0x6C: // BIT 5,H
-            return BIT_b_r8(cpu, 5, H);
+            return BIT_r8(cpu, 5, H);
         case 0x6D: // BIT 5,L
-            return BIT_b_r8(cpu, 5, L);
+            return BIT_r8(cpu, 5, L);
         case 0x6E: // BIT 5,(HL)
-            return BIT_b_HL(cpu, 5);
+            return BIT_HL(cpu, 5);
         case 0x6F: // BIT 5,A
-            return BIT_b_r8(cpu, 5, A);
+            return BIT_r8(cpu, 5, A);
         case 0x70: // BIT 6,B
-            return BIT_b_r8(cpu, 6, B);
+            return BIT_r8(cpu, 6, B);
         case 0x71: // BIT 6,C
-            return BIT_b_r8(cpu, 6, C);
+            return BIT_r8(cpu, 6, C);
         case 0x72: // BIT 6,D
-            return BIT_b_r8(cpu, 6, D);
+            return BIT_r8(cpu, 6, D);
         case 0x73: // BIT 6,E
-            return BIT_b_r8(cpu, 6, E);
+            return BIT_r8(cpu, 6, E);
         case 0x74: // BIT 6,H
-            return BIT_b_r8(cpu, 6, H);
+            return BIT_r8(cpu, 6, H);
         case 0x75: // BIT 6,L
-            return BIT_b_r8(cpu, 6, L);
+            return BIT_r8(cpu, 6, L);
         case 0x76: // BIT 6,(HL)
-            return BIT_b_HL(cpu, 6);
+            return BIT_HL(cpu, 6);
         case 0x77: // BIT 6,A
-            return BIT_b_r8(cpu, 6, A);
+            return BIT_r8(cpu, 6, A);
         case 0x78: // BIT 7,B
-            return BIT_b_r8(cpu, 7, B);
+            return BIT_r8(cpu, 7, B);
         case 0x79: // BIT 7,C
-            return BIT_b_r8(cpu, 7, C);
+            return BIT_r8(cpu, 7, C);
         case 0x7A: // BIT 7,D
-            return BIT_b_r8(cpu, 7, D);
+            return BIT_r8(cpu, 7, D);
         case 0x7B: // BIT 7,E
-            return BIT_b_r8(cpu, 7, E);
+            return BIT_r8(cpu, 7, E);
         case 0x7C: // BIT 7,H
-            return BIT_b_r8(cpu, 7, H);
+            return BIT_r8(cpu, 7, H);
         case 0x7D: // BIT 7,L
-            return BIT_b_r8(cpu, 7, L);
+            return BIT_r8(cpu, 7, L);
         case 0x7E: // BIT 7,(HL)
-            return BIT_b_HL(cpu, 7);
+            return BIT_HL(cpu, 7);
         case 0x7F: // BIT 7,A
-            return BIT_b_r8(cpu, 7, A);
+            return BIT_r8(cpu, 7, A);
         case 0x80: // RES 0,B
-            return RES_b_r8(cpu, 0, B);
+            return RES_r8(cpu, 0, B);
         case 0x81: // RES 0,C
-            return RES_b_r8(cpu, 0, C);
+            return RES_r8(cpu, 0, C);
         case 0x82: // RES 0,D
-            return RES_b_r8(cpu, 0, D);
+            return RES_r8(cpu, 0, D);
         case 0x83: // RES 0,E
-            return RES_b_r8(cpu, 0, E);
+            return RES_r8(cpu, 0, E);
         case 0x84: // RES 0,H
-            return RES_b_r8(cpu, 0, H);
+            return RES_r8(cpu, 0, H);
         case 0x85: // RES 0,L
-            return RES_b_r8(cpu, 0, L);
+            return RES_r8(cpu, 0, L);
         case 0x86: // RES 0,(HL)
-            return RES_b_HL(cpu, 0);
+            return RES_HL(cpu, 0);
         case 0x87: // RES 0,A
-            return RES_b_r8(cpu, 0, A);
+            return RES_r8(cpu, 0, A);
         case 0x88: // RES 1,B
-            return RES_b_r8(cpu, 1, B);
+            return RES_r8(cpu, 1, B);
         case 0x89: // RES 1,C
-            return RES_b_r8(cpu, 1, C);
+            return RES_r8(cpu, 1, C);
         case 0x8A: // RES 1,D
-            return RES_b_r8(cpu, 1, D);
+            return RES_r8(cpu, 1, D);
         case 0x8B: // RES 1,E
-            return RES_b_r8(cpu, 1, E);
+            return RES_r8(cpu, 1, E);
         case 0x8C: // RES 1,H
-            return RES_b_r8(cpu, 1, H);
+            return RES_r8(cpu, 1, H);
         case 0x8D: // RES 1,L
-            return RES_b_r8(cpu, 1, L);
+            return RES_r8(cpu, 1, L);
         case 0x8E: // RES 1,(HL)
-            return RES_b_HL(cpu, 1);
+            return RES_HL(cpu, 1);
         case 0x8F: // RES 1,A
-            return RES_b_r8(cpu, 1, A);
+            return RES_r8(cpu, 1, A);
         case 0x90: // RES 2,B
-            return RES_b_r8(cpu, 2, B);
+            return RES_r8(cpu, 2, B);
         case 0x91: // RES 2,C
-            return RES_b_r8(cpu, 2, C);
+            return RES_r8(cpu, 2, C);
         case 0x92: // RES 2,D
-            return RES_b_r8(cpu, 2, D);
+            return RES_r8(cpu, 2, D);
         case 0x93: // RES 2,E
-            return RES_b_r8(cpu, 2, E);
+            return RES_r8(cpu, 2, E);
         case 0x94: // RES 2,H
-            return RES_b_r8(cpu, 2, H);
+            return RES_r8(cpu, 2, H);
         case 0x95: // RES 2,L
-            return RES_b_r8(cpu, 2, L);
+            return RES_r8(cpu, 2, L);
         case 0x96: // RES 2,(HL)
-            return RES_b_HL(cpu, 2);
+            return RES_HL(cpu, 2);
         case 0x97: // RES 2,A
-            return RES_b_r8(cpu, 2, A);
+            return RES_r8(cpu, 2, A);
         case 0x98: // RES 3,B
-            return RES_b_r8(cpu, 3, B);
+            return RES_r8(cpu, 3, B);
         case 0x99: // RES 3,C
-            return RES_b_r8(cpu, 3, C);
+            return RES_r8(cpu, 3, C);
         case 0x9A: // RES 3,D
-            return RES_b_r8(cpu, 3, D);
+            return RES_r8(cpu, 3, D);
         case 0x9B: // RES 3,E
-            return RES_b_r8(cpu, 3, E);
+            return RES_r8(cpu, 3, E);
         case 0x9C: // RES 3,H
-            return RES_b_r8(cpu, 3, H);
+            return RES_r8(cpu, 3, H);
         case 0x9D: // RES 3,L
-            return RES_b_r8(cpu, 3, L);
+            return RES_r8(cpu, 3, L);
         case 0x9E: // RES 3,(HL)
-            return RES_b_HL(cpu, 3);
+            return RES_HL(cpu, 3);
         case 0x9F: // RES 3,A
-            return RES_b_r8(cpu, 3, A);
+            return RES_r8(cpu, 3, A);
         case 0xA0: // RES 4,B
-            return RES_b_r8(cpu, 4, B);
+            return RES_r8(cpu, 4, B);
         case 0xA1: // RES 4,C
-            return RES_b_r8(cpu, 4, C);
+            return RES_r8(cpu, 4, C);
         case 0xA2: // RES 4,D
-            return RES_b_r8(cpu, 4, D);
+            return RES_r8(cpu, 4, D);
         case 0xA3: // RES 4,E
-            return RES_b_r8(cpu, 4, E);
+            return RES_r8(cpu, 4, E);
         case 0xA4: // RES 4,H
-            return RES_b_r8(cpu, 4, H);
+            return RES_r8(cpu, 4, H);
         case 0xA5: // RES 4,L
-            return RES_b_r8(cpu, 4, L);
+            return RES_r8(cpu, 4, L);
         case 0xA6: // RES 4,(HL)
-            return RES_b_HL(cpu, 4);
+            return RES_HL(cpu, 4);
         case 0xA7: // RES 4,A
-            return RES_b_r8(cpu, 4, A);
+            return RES_r8(cpu, 4, A);
         case 0xA8: // RES 5,B
-            return RES_b_r8(cpu, 5, B);
+            return RES_r8(cpu, 5, B);
         case 0xA9: // RES 5,C
-            return RES_b_r8(cpu, 5, C);
+            return RES_r8(cpu, 5, C);
         case 0xAA: // RES 5,D
-            return RES_b_r8(cpu, 5, D);
+            return RES_r8(cpu, 5, D);
         case 0xAB: // RES 5,E
-            return RES_b_r8(cpu, 5, E);
+            return RES_r8(cpu, 5, E);
         case 0xAC: // RES 5,H
-            return RES_b_r8(cpu, 5, H);
+            return RES_r8(cpu, 5, H);
         case 0xAD: // RES 5,L
-            return RES_b_r8(cpu, 5, L);
+            return RES_r8(cpu, 5, L);
         case 0xAE: // RES 5,(HL)
-            return RES_b_HL(cpu, 5);
+            return RES_HL(cpu, 5);
         case 0xAF: // RES 5,A
-            return RES_b_r8(cpu, 5, A);
+            return RES_r8(cpu, 5, A);
         case 0xB0: // RES 6,B
-            return RES_b_r8(cpu, 6, B);
+            return RES_r8(cpu, 6, B);
         case 0xB1: // RES 6,C
-            return RES_b_r8(cpu, 6, C);
+            return RES_r8(cpu, 6, C);
         case 0xB2: // RES 6,D
-            return RES_b_r8(cpu, 6, D);
+            return RES_r8(cpu, 6, D);
         case 0xB3: // RES 6,E
-            return RES_b_r8(cpu, 6, E);
+            return RES_r8(cpu, 6, E);
         case 0xB4: // RES 6,H
-            return RES_b_r8(cpu, 6, H);
+            return RES_r8(cpu, 6, H);
         case 0xB5: // RES 6,L
-            return RES_b_r8(cpu, 6, L);
+            return RES_r8(cpu, 6, L);
         case 0xB6: // RES 6,(HL)
-            return RES_b_HL(cpu, 6);
+            return RES_HL(cpu, 6);
         case 0xB7: // RES 6,A
-            return RES_b_r8(cpu, 6, A);
+            return RES_r8(cpu, 6, A);
         case 0xB8: // RES 7,B
-            return RES_b_r8(cpu, 7, B);
+            return RES_r8(cpu, 7, B);
         case 0xB9: // RES 7,C
-            return RES_b_r8(cpu, 7, C);
+            return RES_r8(cpu, 7, C);
         case 0xBA: // RES 7,D
-            return RES_b_r8(cpu, 7, D);
+            return RES_r8(cpu, 7, D);
         case 0xBB: // RES 7,E
-            return RES_b_r8(cpu, 7, E);
+            return RES_r8(cpu, 7, E);
         case 0xBC: // RES 7,H
-            return RES_b_r8(cpu, 7, H);
+            return RES_r8(cpu, 7, H);
         case 0xBD: // RES 7,L
-            return RES_b_r8(cpu, 7, L);
+            return RES_r8(cpu, 7, L);
         case 0xBE: // RES 7,(HL)
-            return RES_b_HL(cpu, 7);
+            return RES_HL(cpu, 7);
         case 0xBF: // RES 7,A
-            return RES_b_r8(cpu, 7, A);
+            return RES_r8(cpu, 7, A);
         
         case 0xC0: // SET 0,B
-            return SET_b_r8(cpu, 0, B);
+            return SET_r8(cpu, 0, B);
         case 0xC1: // SET 0,C
-            return SET_b_r8(cpu, 0, C);
+            return SET_r8(cpu, 0, C);
         case 0xC2: // SET 0,D
-            return SET_b_r8(cpu, 0, D);
+            return SET_r8(cpu, 0, D);
         case 0xC3: // SET 0,E
-            return SET_b_r8(cpu, 0, E);
+            return SET_r8(cpu, 0, E);
         case 0xC4: // SET 0,H
-            return SET_b_r8(cpu, 0, H);
+            return SET_r8(cpu, 0, H);
         case 0xC5: // SET 0,L
-            return SET_b_r8(cpu, 0, L);
+            return SET_r8(cpu, 0, L);
         case 0xC6: // SET 0,(HL)
-            return SET_b_HL(cpu, 0);
+            return SET_HL(cpu, 0);
         case 0xC7: // SET 0,A
-            return SET_b_r8(cpu, 0, A);
+            return SET_r8(cpu, 0, A);
         case 0xC8: // SET 1,B
-            return SET_b_r8(cpu, 1, B);
+            return SET_r8(cpu, 1, B);
         case 0xC9: // SET 1,C
-            return SET_b_r8(cpu, 1, C);
+            return SET_r8(cpu, 1, C);
         case 0xCA: // SET 1,D
-            return SET_b_r8(cpu, 1, D);
+            return SET_r8(cpu, 1, D);
         case 0xCB: // SET 1,E
-            return SET_b_r8(cpu, 1, E);
+            return SET_r8(cpu, 1, E);
         case 0xCC: // SET 1,H
-            return SET_b_r8(cpu, 1, H);
+            return SET_r8(cpu, 1, H);
         case 0xCD: // SET 1,L
-            return SET_b_r8(cpu, 1, L);
+            return SET_r8(cpu, 1, L);
         case 0xCE: // SET 1,(HL)
-            return SET_b_HL(cpu, 1);
+            return SET_HL(cpu, 1);
         case 0xCF: // SET 1,A
-            return SET_b_r8(cpu, 1, A);
+            return SET_r8(cpu, 1, A);
         case 0xD0: // SET 2,B
-            return SET_b_r8(cpu, 2, B);
+            return SET_r8(cpu, 2, B);
         case 0xD1: // SET 2,C
-            return SET_b_r8(cpu, 2, C);
+            return SET_r8(cpu, 2, C);
         case 0xD2: // SET 2,D
-            return SET_b_r8(cpu, 2, D);
+            return SET_r8(cpu, 2, D);
         case 0xD3: // SET 2,E
-            return SET_b_r8(cpu, 2, E);
+            return SET_r8(cpu, 2, E);
         case 0xD4: // SET 2,H
-            return SET_b_r8(cpu, 2, H);
+            return SET_r8(cpu, 2, H);
         case 0xD5: // SET 2,L
-            return SET_b_r8(cpu, 2, L);
+            return SET_r8(cpu, 2, L);
         case 0xD6: // SET 2,(HL)
-            return SET_b_HL(cpu, 2);
+            return SET_HL(cpu, 2);
         case 0xD7: // SET 2,A
-            return SET_b_r8(cpu, 2, A);
+            return SET_r8(cpu, 2, A);
         case 0xD8: // SET 3,B
-            return SET_b_r8(cpu, 3, B);
+            return SET_r8(cpu, 3, B);
         case 0xD9: // SET 3,C
-            return SET_b_r8(cpu, 3, C);
+            return SET_r8(cpu, 3, C);
         case 0xDA: // SET 3,D
-            return SET_b_r8(cpu, 3, D);
+            return SET_r8(cpu, 3, D);
         case 0xDB: // SET 3,E
-            return SET_b_r8(cpu, 3, E);
+            return SET_r8(cpu, 3, E);
         case 0xDC: // SET 3,H
-            return SET_b_r8(cpu, 3, H);
+            return SET_r8(cpu, 3, H);
         case 0xDD: // SET 3,L
-            return SET_b_r8(cpu, 3, L);
+            return SET_r8(cpu, 3, L);
         case 0xDE: // SET 3,(HL)
-            return SET_b_HL(cpu, 3);
+            return SET_HL(cpu, 3);
         case 0xDF: // SET 3,A
-            return SET_b_r8(cpu, 3, A);
+            return SET_r8(cpu, 3, A);
         case 0xE0: // SET 4,B
-            return SET_b_r8(cpu, 4, B);
+            return SET_r8(cpu, 4, B);
         case 0xE1: // SET 4,C
-            return SET_b_r8(cpu, 4, C);
+            return SET_r8(cpu, 4, C);
         case 0xE2: // SET 4,D
-            return SET_b_r8(cpu, 4, D);
+            return SET_r8(cpu, 4, D);
         case 0xE3: // SET 4,E
-            return SET_b_r8(cpu, 4, E);
+            return SET_r8(cpu, 4, E);
         case 0xE4: // SET 4,H
-            return SET_b_r8(cpu, 4, H);
+            return SET_r8(cpu, 4, H);
         case 0xE5: // SET 4,L
-            return SET_b_r8(cpu, 4, L);
+            return SET_r8(cpu, 4, L);
         case 0xE6: // SET 4,(HL)
-            return SET_b_HL(cpu, 4);
+            return SET_HL(cpu, 4);
         case 0xE7: // SET 4,A
-            return SET_b_r8(cpu, 4, A);
+            return SET_r8(cpu, 4, A);
         case 0xE8: // SET 5,B
-            return SET_b_r8(cpu, 5, B);
+            return SET_r8(cpu, 5, B);
         case 0xE9: // SET 5,C
-            return SET_b_r8(cpu, 5, C);
+            return SET_r8(cpu, 5, C);
         case 0xEA: // SET 5,D
-            return SET_b_r8(cpu, 5, D);
+            return SET_r8(cpu, 5, D);
         case 0xEB: // SET 5,E
-            return SET_b_r8(cpu, 5, E);
+            return SET_r8(cpu, 5, E);
         case 0xEC: // SET 5,H
-            return SET_b_r8(cpu, 5, H);
+            return SET_r8(cpu, 5, H);
         case 0xED: // SET 5,L
-            return SET_b_r8(cpu, 5, L);
+            return SET_r8(cpu, 5, L);
         case 0xEE: // SET 5,(HL)
-            return SET_b_HL(cpu, 5);
+            return SET_HL(cpu, 5);
         case 0xEF: // SET 5,A
-            return SET_b_r8(cpu, 5, A);
+            return SET_r8(cpu, 5, A);
         case 0xF0: // SET 6,B
-            return SET_b_r8(cpu, 6, B);
+            return SET_r8(cpu, 6, B);
         case 0xF1: // SET 6,C
-            return SET_b_r8(cpu, 6, C);
+            return SET_r8(cpu, 6, C);
         case 0xF2: // SET 6,D
-            return SET_b_r8(cpu, 6, D);
+            return SET_r8(cpu, 6, D);
         case 0xF3: // SET 6,E
-            return SET_b_r8(cpu, 6, E);
+            return SET_r8(cpu, 6, E);
         case 0xF4: // SET 6,H
-            return SET_b_r8(cpu, 6, H);
+            return SET_r8(cpu, 6, H);
         case 0xF5: // SET 6,L
-            return SET_b_r8(cpu, 6, L);
+            return SET_r8(cpu, 6, L);
         case 0xF6: // SET 6,(HL)
-            return SET_b_HL(cpu, 6);
+            return SET_HL(cpu, 6);
         case 0xF7: // SET 6,A
-            return SET_b_r8(cpu, 6, A);
+            return SET_r8(cpu, 6, A);
         case 0xF8: // SET 7,B
-            return SET_b_r8(cpu, 7, B);
+            return SET_r8(cpu, 7, B);
         case 0xF9: // SET 7,C
-            return SET_b_r8(cpu, 7, C);
+            return SET_r8(cpu, 7, C);
         case 0xFA: // SET 7,D
-            return SET_b_r8(cpu, 7, D);
+            return SET_r8(cpu, 7, D);
         case 0xFB: // SET 7,E
-            return SET_b_r8(cpu, 7, E);
+            return SET_r8(cpu, 7, E);
         case 0xFC: // SET 7,H
-            return SET_b_r8(cpu, 7, H);
+            return SET_r8(cpu, 7, H);
         case 0xFD: // SET 7,L
-            return SET_b_r8(cpu, 7, L);
+            return SET_r8(cpu, 7, L);
         case 0xFE: // SET 7,(HL)
-            return SET_b_HL(cpu, 7);
+            return SET_HL(cpu, 7);
         case 0xFF: // SET 7,A
-            return SET_b_r8(cpu, 7, A);
+            return SET_r8(cpu, 7, A);
         default:
             break;
         }
 
     }
+    exit(1);
 }
 
 // =================================================================================
@@ -1340,7 +1342,7 @@ int LD_n16_A(cpu_t *cpu)
     write_memory(cpu, unsigned_16(W,Z), get_8bit_register(cpu, A));
     return 4;    
 }
-int LDH_n16_A(cpu_t *cpu) 
+int LDH_n8_A(cpu_t *cpu) 
 {
     uint8_t Z = read_memory(cpu, cpu->PC); cpu->PC++;
     write_memory(cpu, unsigned_16(0xFF,Z), get_8bit_register(cpu, A));
@@ -1367,13 +1369,7 @@ int LD_A_n16(cpu_t *cpu)
     set_8bit_register(cpu, A, Z);
     return 4;
 }
-int LDH_A_n16(cpu_t *cpu)
-{
-    uint8_t Z = read_memory(cpu, cpu->PC); cpu->PC++;
-    Z = read_memory(cpu, unsigned_16(0xFF,Z));
-    set_8bit_register(cpu, A, Z);
-    return 3;
-}
+
 int LDH_A_C(cpu_t *cpu)
 {
     uint8_t Z = read_memory(cpu, unsigned_16(0xFF, get_8bit_register(cpu, C)));
@@ -1754,7 +1750,6 @@ int SBC_HL(cpu_t *cpu)
 }
 int SBC_n8(cpu_t *cpu)
 {
-    uint8_t a = get_8bit_register(cpu, A);
     uint8_t Z = read_memory(cpu, cpu->PC); cpu->PC++;
     operation_result_t r = sub(A, Z + get_flag(cpu, CARRY));
     set_8bit_register(cpu, A, r.result);
@@ -1868,11 +1863,7 @@ int DEC_r16(cpu_t *cpu, uint16_t *reg)
     return 2;
 }
 
-int INC_r16(cpu_t *cpu, uint16_t *reg)
-{
-    *reg = *reg + 1;
-    return 2;
-}
+
 
 // Bitwise logic instructions
 
@@ -2054,7 +2045,7 @@ int RES_r8(cpu_t *cpu, reg_8bits_t reg, uint8_t b)
 }
 int RES_HL(cpu_t *cpu, uint8_t b)
 {
-    write_memory(cpu, cpu->registers->HL, (read_memory(cpu, *cpu->registers->HL) | ~(1 << b)));
+    write_memory(cpu, *cpu->registers->HL, (read_memory(cpu, *cpu->registers->HL) | ~(1 << b)));
     return 4;
 }
 int SET_r8(cpu_t *cpu, reg_8bits_t reg, uint8_t b)
@@ -2064,7 +2055,7 @@ int SET_r8(cpu_t *cpu, reg_8bits_t reg, uint8_t b)
 }
 int SET_HL(cpu_t *cpu, uint8_t b)
 {
-    write_memory(cpu, cpu->registers->HL, (read_memory(cpu, *cpu->registers->HL) | (1 << b)));
+    write_memory(cpu, *cpu->registers->HL, (read_memory(cpu, *cpu->registers->HL) | (1 << b)));
     return 4;
 }
 
@@ -2102,7 +2093,7 @@ int RL_HL(cpu_t *cpu)
     int b7 = bit(7, old_HL);
     int carry = get_flag(cpu, CARRY);
     uint8_t new_HL = (0x000000 | (old_HL<<1)) |((uint8_t)(carry));
-    write_memory(cpu, cpu->registers->HL, new_HL);
+    write_memory(cpu, *cpu->registers->HL, new_HL);
     set_flag(cpu, ZERO, 0);
     set_flag(cpu, SUB, 0);
     set_flag(cpu, HALF_CARRY, 0);
@@ -2168,7 +2159,7 @@ int RLC_HL(cpu_t *cpu)
     uint8_t old_HL = read_memory(cpu, *cpu->registers->HL);
     int b7 = bit(7, old_HL);
     uint8_t new_HL = (0x000000 | (old_HL<<1)) |((uint8_t)(b7));
-    write_memory(cpu, cpu->registers->HL, new_HL);
+    write_memory(cpu, *cpu->registers->HL, new_HL);
     set_flag(cpu, ZERO, 0);
     set_flag(cpu, SUB, 0);
     set_flag(cpu, HALF_CARRY, 0);
@@ -2235,7 +2226,7 @@ int RR_HL(cpu_t *cpu)
     int b0 = bit(0, old_HL);
     int carry = get_flag(cpu, CARRY);
     uint8_t new_HL = (0x000000 | (old_HL>>1)) |((uint8_t)(carry<<7));
-    write_memory(cpu, cpu->registers->HL, new_HL);
+    write_memory(cpu, *cpu->registers->HL, new_HL);
     set_flag(cpu, ZERO, 0);
     set_flag(cpu, SUB, 0);
     set_flag(cpu, HALF_CARRY, 0);
@@ -2301,7 +2292,7 @@ int RRC_HL(cpu_t *cpu)
     uint8_t old_HL = read_memory(cpu, *cpu->registers->HL);
     int b0 = bit(0, old_HL);
     uint8_t new_HL = (0x000000 | (old_HL>>1)) |((uint8_t)(b0<<7));
-    write_memory(cpu, cpu->registers->HL, new_HL);
+    write_memory(cpu, *cpu->registers->HL, new_HL);
     set_flag(cpu, ZERO, 0);
     set_flag(cpu, SUB, 0);
     set_flag(cpu, HALF_CARRY, 0);
@@ -2498,11 +2489,11 @@ int SWAP_r8(cpu_t *cpu, reg_8bits_t reg)
 }
 int SWAP_HL(cpu_t *cpu) 
 {
-    uint8_t hl_value = read_memory(cpu, cpu->registers->HL);
+    uint8_t hl_value = read_memory(cpu, *cpu->registers->HL);
     uint8_t high_nibble = hl_value>>4;
     uint8_t low_nibble = hl_value<<4;
     hl_value = high_nibble | low_nibble;
-    write_memory(cpu, cpu->registers->HL, hl_value);
+    write_memory(cpu, *cpu->registers->HL, hl_value);
     set_flag(cpu, SUB, 0);
     set_flag(cpu, CARRY, 0);
     set_flag(cpu, HALF_CARRY, 0);
@@ -2550,6 +2541,7 @@ int CALL_cc_n16(cpu_t *cpu, bool cc)
 int JP_HL(cpu_t *cpu)
 {
     cpu->PC = *cpu->registers->HL;
+    return 1;
 }
 int JP_n16(cpu_t *cpu)
 {
@@ -2664,7 +2656,7 @@ int SCF(cpu_t *cpu)
 
 
 // Stack manipulation instructions
-int ADD_SP_e8(cpu_t *cpu, int8_t offset)
+int ADD_SP_e8(cpu_t *cpu)
 {
     uint8_t Z = read_memory(cpu, cpu->PC); cpu->PC++;
     operation_result_t result = add(lsb(cpu->SP), Z);
@@ -2722,7 +2714,7 @@ int LD_SP_HL(cpu_t *cpu)
     cpu->SP = *cpu->registers->HL;
     return 2;
 }
-int LD_HL_SP_e8(cpu_t *cpu, int8_t offset)
+int LD_HL_SP_e8(cpu_t *cpu)
 {
     uint8_t Z = read_memory(cpu, cpu->PC); cpu->PC++;
     operation_result_t result = add(lsb(cpu->SP), Z);
@@ -2778,6 +2770,7 @@ int DI(cpu_t *cpu)
 int EI(cpu_t *cpu)
 {
     cpu->IME_pending = true;
+    return 1; 
 }
 int HALT(cpu_t *cpu); //TODO
 
@@ -2818,7 +2811,7 @@ operation_result_t add(uint8_t a, uint8_t b)
     uint8_t result = a + b;
     uint16_t result16 = (uint16_t) a + (uint16_t) b;
     bool carry = result16 > UINT8_MAX; 
-    bool halfcarry = (a & 0x0F +  b & 0x0F)>0x0F;
+    bool halfcarry = ((a & 0x0F) +  (b & 0x0F))>0x0F;
     operation_result_t output = {
         result,
         carry,
@@ -2832,7 +2825,7 @@ operation_result_t add_16(uint16_t a, uint16_t b)
     uint16_t result = a + b;
     uint32_t result32 = (uint32_t) a + (uint32_t) b;
     bool carry = result32 > UINT16_MAX; 
-    bool halfcarry = (a & 0x00FF +  b & 0x00FF)>0x00FF;
+    bool halfcarry = ((a & 0x00FF) + (b & 0x00FF))>0x00FF;
     operation_result_t output = {
         result,
         carry,
